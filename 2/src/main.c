@@ -1,6 +1,7 @@
 #include "quicksort.h"
 #include "random.h"
 #include "timer.h"
+#include "omp_common.h"
 
 #include <stdio.h>
 
@@ -8,6 +9,8 @@ int main() {
   arr_t arr[ARRAY_SIZE];
   double timer;
   randomFill(arr, ARRAY_SIZE);
+
+  printf("OMP Threads number: %d\n\n", getThreadsNum());
 
   printf("Sorting, parallel.\n");
   #pragma omp parallel

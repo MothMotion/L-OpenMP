@@ -1,6 +1,7 @@
 #include "operations.h"
 #include "random.h"
 #include "timer.h"
+#include "omp_common.h"
 
 #include <stdint.h>
 #include <time.h>
@@ -17,6 +18,8 @@ int main() {
 
   randomFill(array1, ARRAY_SIZE);
   randomFill(array2, ARRAY_SIZE);
+
+  printf("OMP Threads number: %d\n\n", getThreadsNum());
 
   printf("Addition, parallel.\n");
   GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE);

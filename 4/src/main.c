@@ -1,5 +1,6 @@
 #include "operations.h"
 #include "timer.h"
+#include "omp_common.h"
 
 #include <stdint.h>
 #include <time.h>
@@ -13,6 +14,8 @@ int main() {
        *array2,
        *out_array;
   double timer;
+
+  printf("OMP Threads amount: %d\n\n", getThreadsNum());
 
   printf("Initializing...\n");
  
