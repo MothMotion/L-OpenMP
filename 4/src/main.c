@@ -17,14 +17,30 @@ int main() {
   printf("Initializing...\n");
  
   // parallize this, i dare you
-  GETTIME(init, timer, &array1, ARRAY_SIZE, DIMENSIONS); 
-  printf("arr1 done, time: %f\n", timer);
-  GETTIME(init, timer, &array2, ARRAY_SIZE, DIMENSIONS);
-  printf("arr2 done, time: %f\n", timer);
-  GETTIME(init, timer, &out_array, ARRAY_SIZE, DIMENSIONS); 
-  printf("out done, time: %f\n\n", timer);
+  //#pragma omp parallel
+  {
+    //#pragma omp single // slow first even slower next two
+    //#pragma omp parallel sections num_threads(3) // same as above
+    {
+      //#pragma omp section// shared(array1)
+      {
+        GETTIME(init, timer, &array1, ARRAY_SIZE, DIMENSIONS);
+        printf("arr1 done, time: %f\n", timer);
+      }
+      //#pragma omp section// shared(array2)
+      {
+        GETTIME(init, timer, &array2, ARRAY_SIZE, DIMENSIONS);
+        printf("arr2 done, time: %f\n", timer);
+      }
+      //#pragma omp section// shared(out_array)
+      {
+        GETTIME(init, timer, &out_array, ARRAY_SIZE, DIMENSIONS); 
+        printf("out done, time: %f\n", timer);
+      }
+    }
+  } 
 
-  printf("Addition, parallel.\n");
+  printf("\nAddition, parallel.\n");
   #pragma omp parallel
   {
     #pragma omp single 
@@ -72,7 +88,8 @@ int main() {
   GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sDiv);
   printf("Time: %f\n\n", timer);
 
-  printf("Deleting arrays...\n"); 
+  printf("Deleting arrays...\n");
+  // wont parallize bc same reasons as init
   deinit(&array1, ARRAY_SIZE, DIMENSIONS); 
   deinit(&array2, ARRAY_SIZE, DIMENSIONS);
   deinit(&out_array, ARRAY_SIZE, DIMENSIONS);

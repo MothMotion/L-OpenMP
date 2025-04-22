@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 void randomFill(arr_t array[], const uint32_t size) {
-  //#pragma omp for <- bs
+  //#pragma omp parallel for <- bs
   for(uint32_t i=0; i<size; ++i)
     array[i] = rand()%MAX_RAND;
 }

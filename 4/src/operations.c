@@ -61,16 +61,23 @@ void init(void** array, const uint32_t size, const uint32_t dim) {
     return; 
 
   if(dim == 1) {
-    *array = malloc(size * sizeof(arr_t)); 
+    *array = malloc(size * sizeof(arr_t));
+    //#pragma omp task
     randomFill(*array, size);
     return;
   }
   *array = malloc(size * sizeof(void*)); 
- 
-  void* temp;
+
+  //#pragma omp parallel for // only slowing down
+  //#pragma omp single
   for(uint32_t i=0; i<size; ++i) {
-    init(&temp, size, dim-1);
-    ((void**)*array)[i] = temp;
+    //#pragma omp task // fast but malloc corrupted top size
+    {
+      void* temp; 
+      //#pragma omp task // super fast but strange behaviour 
+      init(&temp, size, dim-1);
+      ((void**)*array)[i] = temp;
+    }
   } 
 }
 
