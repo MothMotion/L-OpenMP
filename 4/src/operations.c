@@ -5,142 +5,80 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void pMultiDim(void* arr1, void* arr2, void* out,
-               const uint32_t size, const uint32_t dim, const uint8_t operation) { 
-  if(dim < 1) // why
-    return;
-
-  if(dim == 1)
-    switch(operation) {
-      case pAdd : return pAddArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pSub : return pSubArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pMul : return pMulArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pDiv : return pDivArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-
-      // why do you need these?
-      case sAdd : return sAddArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sSub : return sSubArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sMul : return sMulArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sDiv : return sDivArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      
-      default: return; // what are you doing?
-    }
- 
-  for(uint32_t i=0; i<size; ++i)
-    #pragma omp task shared(arr1, arr2, out)
-    pMultiDim(((void**)arr1)[i], ((void**)arr2)[i], ((void**)out)[i], size, dim-1, operation); 
-}
-
-void sMultiDim(void* arr1, void* arr2, void* out,
-               const uint32_t size, const uint32_t dim, const uint8_t operation) { 
-  if(dim < 1) // just why
-    return;
-
-  if(dim == 1)
-    switch(operation) {
-      // is there some higher meaning?
-      case pAdd : return pAddArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pSub : return pSubArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pMul : return pMulArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case pDiv : return pDivArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
- 
-      case sAdd : return sAddArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sSub : return sSubArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sMul : return sMulArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      case sDiv : return sDivArray((arr_t*)arr1, (arr_t*)arr2, (arr_t*)out, size);
-      
-      default: return; // what
-    }
-
-  for(uint32_t i=0; i<size; ++i)
-    sMultiDim(((void**)arr1)[i], ((void**)arr2)[i], ((void**)out)[i], size, dim-1, operation);
-}
-
-void init(void** array, const uint32_t size, const uint32_t dim) { 
-  if(dim < 1) // why you keep doing this?
-    return; 
-
-  if(dim == 1) {
-    *array = malloc(size * sizeof(arr_t));
-    //#pragma omp task
-    randomFill(*array, size);
-    return;
-  }
-  *array = malloc(size * sizeof(void*)); 
-
-  //#pragma omp parallel for // only slowing down
-  //#pragma omp single
-  for(uint32_t i=0; i<size; ++i) {
-    //#pragma omp task // fast but malloc corrupted top size
+void pAddArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) { 
+  //#pragma omp parallel for
+  for(uint32_t i=0; i < sizeX; ++i) {
+    #pragma omp task firstprivate(i)
     {
-      void* temp; 
-      //#pragma omp task // super fast but strange behaviour 
-      init(&temp, size, dim-1);
-      ((void**)*array)[i] = temp;
+      //#pragma omp parallel for
+      for(uint32_t j=0; j < sizeY; ++j)
+        out[i][j] = arr1[i][j] + arr2[i][j];
     }
-  } 
-}
-
-void deinit(void** array, const uint32_t size, const uint32_t dim) {
-  if(dim < 1) // just stop
-    return; 
-
-  if(dim > 1) { 
-    for(uint32_t i=0; i<size; ++i)
-      //#pragma omp task shared(array) <- get owned, wont work 
-      deinit(&((void**)*array)[i], size, dim-1);
   }
-  free(*array);
+}
+
+void pSubArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) { 
+  #pragma omp parallel for shared(arr1, arr2, out, sizeX, sizeY)
+  for(uint32_t i=0; i < sizeX; ++i)
+    for(uint32_t j=0; j < sizeY; ++j)
+      out[i][j] = arr1[i][j] - arr2[i][j];
+}
+
+void pMulArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  #pragma omp parallel for shared(arr1, arr2, out, sizeX, sizeY)
+  for(uint32_t i=0; i < sizeX; ++i) 
+    for(uint32_t j=0; j < sizeY; ++j)
+      out[i][j] = arr1[i][j] * arr2[i][j];
+}
+
+void pDivArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  #pragma omp parallel for shared(arr1, arr2, out, sizeX, sizeY)
+  for(uint32_t i=0; i < sizeX; ++i)
+    for(uint32_t j=0; j < sizeY; ++j)
+      if(arr2[i][j])
+        out[i][j] = arr1[i][j] / arr2[i][j];
+      else out[i][j] = arr1[i][j]; // i dont give a f
 }
 
 
 
-void pAddArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  #pragma omp parallel for 
-  for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] + arr2[i];
+void sAddArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  for(uint32_t i=0; i < sizeX; ++i) 
+    for(uint32_t j=0; j < sizeY; ++j)
+      out[i][j] = arr1[i][j] + arr2[i][j];
 }
 
-void pSubArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
+void sSubArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  for(uint32_t i=0; i < sizeX; ++i)
+    for(uint32_t j=0; j < sizeY; ++j)
+      out[i][j] = arr1[i][j] - arr2[i][j];
+}
+
+void sMulArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  for(uint32_t i=0; i < sizeX; ++i) 
+    for(uint32_t j=0; j < sizeY; ++j)
+      out[i][j] = arr1[i][j] * arr2[i][j];
+}
+
+void sDivArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX, const uint32_t sizeY) {
+  for(uint32_t i=0; i < sizeX; ++i)
+    for(uint32_t j=0; j < sizeY; ++j)
+      if(arr2[i][j])
+        out[i][j] = arr1[i][j] / arr2[i][j];
+      else out[i][j] = arr1[i][j]; // i STILL dont give a f
+}
+
+
+void init(arr_t* arr[], const uint32_t sizeX, const uint32_t sizeY) {
   #pragma omp parallel for
-  for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] - arr2[i];
+  for(uint32_t i=0; i<sizeX; ++i) {
+    arr[i] = malloc(sizeY * sizeof(arr_t));
+    randomFill(arr[i], sizeY);
+  }
 }
 
-void pMulArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  #pragma omp parallel for
+void deinit(arr_t* arr[], const uint32_t size) {
+  //#pragma omp parallel for
   for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] * arr2[i];
-}
-
-void pDivArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  #pragma omp parallel for
-  for(uint32_t i=0; i<size; ++i)
-    if(arr2[i])
-      out[i] = arr1[i] / arr2[i];
-    else out[i] = arr1[i]; // i still dont give a f
-}
-
-
-
-void sAddArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] + arr2[i];
-}
-
-void sSubArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] - arr2[i];
-}
-
-void sMulArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) {
-  for(uint32_t i=0; i<size; ++i)
-    out[i] = arr1[i] * arr2[i];
-}
-
-void sDivArray(const arr_t* arr1, const arr_t* arr2, arr_t* out, const uint32_t size) { 
-  for(uint32_t i=0; i<size; ++i)
-    if(arr2[i])
-      out[i] = arr1[i] / arr2[i];
-    else out[i] = arr1[i]; // do i REALLY need to repeat myself?
+    free(arr[i]);
 }

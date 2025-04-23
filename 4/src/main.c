@@ -10,93 +10,65 @@
 int main() {
   srand(time(NULL));
 
-  void *array1,
-       *array2,
-       *out_array;
+  arr_t *array1[ARRAY_SIZE],
+        *array2[ARRAY_SIZE],
+        *out_array[ARRAY_SIZE];
   double timer;
 
-  printf("OMP Threads amount: %d\n\n", getThreadsNum());
+  printf("Initialization...\n");
 
-  printf("Initializing...\n");
- 
-  // parallize this, i dare you
-  //#pragma omp parallel
-  {
-    //#pragma omp single // slow first even slower next two
-    //#pragma omp parallel sections num_threads(3) // same as above
-    {
-      //#pragma omp section// shared(array1)
-      {
-        GETTIME(init, timer, &array1, ARRAY_SIZE, DIMENSIONS);
-        printf("arr1 done, time: %f\n", timer);
-      }
-      //#pragma omp section// shared(array2)
-      {
-        GETTIME(init, timer, &array2, ARRAY_SIZE, DIMENSIONS);
-        printf("arr2 done, time: %f\n", timer);
-      }
-      //#pragma omp section// shared(out_array)
-      {
-        GETTIME(init, timer, &out_array, ARRAY_SIZE, DIMENSIONS); 
-        printf("out done, time: %f\n", timer);
-      }
-    }
-  } 
+  GETTIME(init, timer, array1, ARRAY_SIZE, ARRAY_SIZE);
+  printf("array1 done. time: %f\n", timer);
+  GETTIME(init, timer, array2, ARRAY_SIZE, ARRAY_SIZE);
+  printf("array2 done. time: %f\n", timer);
+  GETTIME(init, timer, out_array, ARRAY_SIZE, ARRAY_SIZE);
+  printf("out done. time: %f\n\n", timer);
 
-  printf("\nAddition, parallel.\n");
+
+
+  printf("OMP Threads number: %d\n\n", getThreadsNum());
+
+  printf("Addition, parallel.\n");
   #pragma omp parallel
   {
-    #pragma omp single 
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pAdd); }
+    #pragma omp single
+    {
+      GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    }
   }
-  printf("Time: %f\n\n", timer); 
+  printf("Time: %f\n\n", timer);
 
   printf("Addition, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sAdd);
+  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Substraction, parallel.\n");
-  #pragma omp parallel
-  {
-    #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pSub); }
-  }
+  GETTIME(pSubArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Substraction, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sSub);
+  GETTIME(sSubArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Multiplication, parallel.\n");
-  #pragma omp parallel
-  {
-    #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pMul); }
-  }
+  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Multiplication, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sMul);
+  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Division, parallel.\n");
-  #pragma omp parallel
-  {
-    #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pDiv); }
-  }
+  GETTIME(pDivArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
   printf("Division, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sDiv);
+  GETTIME(sDivArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
-  printf("Deleting arrays...\n");
-  // wont parallize bc same reasons as init
-  deinit(&array1, ARRAY_SIZE, DIMENSIONS); 
-  deinit(&array2, ARRAY_SIZE, DIMENSIONS);
-  deinit(&out_array, ARRAY_SIZE, DIMENSIONS);
-  printf("Done.\n");
+  deinit(array1, ARRAY_SIZE);
+  deinit(array2, ARRAY_SIZE);
+  deinit(out_array, ARRAY_SIZE);
 
   return 0;
 }

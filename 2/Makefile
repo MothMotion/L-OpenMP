@@ -15,6 +15,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(CCFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p obj
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 clean:
