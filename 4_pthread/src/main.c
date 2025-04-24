@@ -1,6 +1,7 @@
 #include "operations.h"
 #include "timer.h"
 #include "omp_common.h"
+#include "pthreading.h"
 
 #include <stdint.h>
 #include <time.h>
@@ -28,8 +29,14 @@ int main() {
 
   printf("OMP Threads number: %d\n\n", getThreadsNum());
 
-  printf("Addition, parallel.\n"); 
-  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+  printf("Addition, parallel.\n");
+  #pragma omp parallel
+  {
+    #pragma omp single
+    {
+      GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    }
+  }
   printf("Time: %f\n\n", timer);
 
   printf("Addition, serial.\n");
@@ -52,8 +59,8 @@ int main() {
   GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
   printf("Time: %f\n\n", timer);
 
-  printf("Division, parallel.\n");
-  GETTIME(pDivArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+  printf("Division, parallel.\n"); 
+  GETTIME(pThreading, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE, pDiv, 4);
   printf("Time: %f\n\n", timer);
 
   printf("Division, serial.\n");

@@ -2,7 +2,7 @@
 #ifndef OPERATIONS
 #define OPERATIONS
 
-#define ARRAY_SIZE 50
+#define ARRAY_SIZE 150
 #define DIMENSIONS 4
 #define arr_t uint8_t
 
