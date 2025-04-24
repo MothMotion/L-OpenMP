@@ -2,7 +2,7 @@
 #ifndef QUICKSORT
 #define QUICKSORT
 
-#define ARRAY_SIZE 100000
+#define ARRAY_SIZE 1000000
 #define arr_t uint16_t
 
 #include <stdint.h>

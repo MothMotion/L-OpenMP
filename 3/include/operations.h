@@ -2,7 +2,7 @@
 #ifndef OPERATIONS
 #define OPERATIONS
 
-#define ARRAY_SIZE 100000
+#define ARRAY_SIZE 2500000
 #define arr_t uint8_t
 
 #include <stdint.h>
