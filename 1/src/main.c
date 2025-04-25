@@ -1,6 +1,7 @@
 #include "omp_common.h"
 #include "summ.h"
 #include "random.h"
+#include "timer.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,26 +11,19 @@
 int main() {
   srand(time(NULL));
   arr_t array[ARRAY_SIZE];
-  randomFill(array, ARRAY_SIZE);
-  
-  printf("OMP Threads number: %d\n\n", getThreadsNum());
+  double ptimer = 0, stimer = 0;
 
-  printf("Starting parallel summation...\n");
+  printf("Settings:\n\tOMP Threads: %d\n\tArray Size: %d\n\tCycles: %d\n\n",
+         getThreadsNum(), ARRAY_SIZE, CYCLES);
 
-  clock_t start = clock();
-  uint64_t summ = getSum(array, ARRAY_SIZE);
-  clock_t end = clock();
+  for(uint32_t i=0; i<CYCLES; ++i) {
+    randomFill(array, ARRAY_SIZE); 
 
-  printf("Calculations finished.\n\nResult:%lu\nTime:%f\n", summ, (double)(end - start)/CLOCKS_PER_SEC);
+    ADDTIME_COR(pSum, ptimer, CYCLES, array, ARRAY_SIZE); 
+    ADDTIME_COR(sSum, stimer, CYCLES, array, ARRAY_SIZE);
+  }
 
-  summ = 0;
-  printf("\n===============\nStarting serial summation\n");
-  start = clock();
-  for(uint32_t i=0; i<ARRAY_SIZE; ++i)
-    summ += array[i];
-  end = clock();
-
-  printf("Calculations finished.\n\nResult:%lu\nTime:%f\n", summ, (double)(end - start)/CLOCKS_PER_SEC);
+  printf("Calculations finished.\n\tParallel time: %f\n\tSerial time: %f\n", ptimer, stimer);
 
   return 0;
 }

@@ -2,8 +2,10 @@
 #ifndef OPERATIONS
 #define OPERATIONS
 
-#define ARRAY_SIZE 80000
+#define ARRAY_SIZE 60000
 #define arr_t uint8_t
+
+#define CYCLES 1000
 
 #include <stdint.h>
 

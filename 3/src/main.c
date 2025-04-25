@@ -12,46 +12,36 @@ int main() {
   srand(time(NULL));
 
   arr_t array1[ARRAY_SIZE],
-          array2[ARRAY_SIZE],
-          out_array[ARRAY_SIZE];
-  double timer;
+        array2[ARRAY_SIZE],
+        out_array[ARRAY_SIZE];
+  double trand1=0, trand2=0,
+         ptadd=0, ptsub=0, ptmul=0, ptdiv=0,
+         stadd=0, stsub=0, stmul=0, stdiv=0;
 
-  randomFill(array1, ARRAY_SIZE);
-  randomFill(array2, ARRAY_SIZE);
+  printf("Settings:\n\tOMP Threads: %d\n\tArray sizes: %d\n\tCycles: %d\n\n",
+         getThreadsNum(), ARRAY_SIZE, CYCLES);
 
-  printf("OMP Threads number: %d\n\n", getThreadsNum());
 
-  printf("Addition, parallel.\n");
-  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+  for(uint32_t i=0; i<CYCLES; ++i) {
+    randomFill(array1, ARRAY_SIZE);
+    randomFill(array2, ARRAY_SIZE);
 
-  printf("Addition, serial.\n");
-  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pAddArray, ptadd, CYCLES, array1, array2, out_array, ARRAY_SIZE);
+    ADDTIME_COR(sAddArray, stadd, CYCLES, array1, array2, out_array, ARRAY_SIZE);
 
-  printf("Substraction, parallel.\n");
-  GETTIME(pSubArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pSubArray, ptsub, CYCLES, array1, array2, out_array, ARRAY_SIZE);
+    ADDTIME_COR(sSubArray, stsub, CYCLES, array1, array2, out_array, ARRAY_SIZE);
 
-  printf("Substraction, serial.\n");
-  GETTIME(sSubArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pMulArray, ptmul, CYCLES, array1, array2, out_array, ARRAY_SIZE);
+    ADDTIME_COR(sMulArray, stmul, CYCLES, array1, array2, out_array, ARRAY_SIZE);
 
-  printf("Multiplication, parallel.\n");
-  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pDivArray, ptdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE);
+    ADDTIME_COR(sDivArray, stdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE);
+  }
 
-  printf("Multiplication, serial.\n");
-  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Division, parallel.\n");
-  GETTIME(pDivArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Division, serial.\n");
-  GETTIME(sDivArray, timer, array1, array2, out_array, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+  printf("Calculations done.\np - parallel, s - serial\nTime for:\n\tpAdd: %f\t\tsAdd: %f\n\
+\tpSub: %f\t\tsSub: %f\n\tpMul: %f\t\tsMul: %f\n\tpDiv: %f\t\tsDiv: %f\n\tRand arr1: %f\t\tRand arr2: %f",
+         ptadd, stadd, ptsub, stsub, ptmul, stmul, ptdiv, stdiv, trand1, trand2);
 
   return 0;
 }

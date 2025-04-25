@@ -1,6 +1,7 @@
 #include "operations.h"
 #include "timer.h"
 #include "omp_common.h"
+#include "random.h"
 
 #include <stdint.h>
 #include <time.h>
@@ -13,52 +14,38 @@ int main() {
   arr_t *array1[ARRAY_SIZE],
         *array2[ARRAY_SIZE],
         *out_array[ARRAY_SIZE];
-  double timer;
+  double t_init_arr1=0, t_init_arr2=0,
+         ptadd=0, ptsub=0, ptmul=0, ptdiv=0,
+         stadd=0, stsub=0, stmul=0, stdiv=0;
 
-  printf("Initialization...\n");
+  printf("Settings:\n\tOMP Threads: %d\n\tArray sizes: %dx%d\n\tCycles: %d\n\n",
+         getThreadsNum(), ARRAY_SIZE, ARRAY_SIZE, CYCLES); 
 
-  GETTIME(init, timer, array1, ARRAY_SIZE, ARRAY_SIZE);
-  printf("array1 done. time: %f\n", timer);
-  GETTIME(init, timer, array2, ARRAY_SIZE, ARRAY_SIZE);
-  printf("array2 done. time: %f\n", timer);
-  GETTIME(init, timer, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("out done. time: %f\n\n", timer);
+  init(array1, ARRAY_SIZE, ARRAY_SIZE);
+  init(array2, ARRAY_SIZE, ARRAY_SIZE);
+  init(out_array, ARRAY_SIZE, ARRAY_SIZE);
 
+  printf("Starting calculations...\n");
+  for(uint32_t i=0; i<CYCLES; ++i) {
+    ADDTIME_COR(randomizeMat, t_init_arr1, CYCLES, array1, ARRAY_SIZE, ARRAY_SIZE);
+    ADDTIME_COR(randomizeMat, t_init_arr2, CYCLES, array2, ARRAY_SIZE, ARRAY_SIZE); 
 
+    ADDTIME_COR(pAddArray, ptadd, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    ADDTIME_COR(sAddArray, stadd, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
 
-  printf("OMP Threads number: %d\n\n", getThreadsNum());
+    ADDTIME_COR(pSubArray, ptsub, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    ADDTIME_COR(sSubArray, stsub, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
 
-  printf("Addition, parallel.\n"); 
-  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pMulArray, ptmul, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    ADDTIME_COR(sMulArray, stmul, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
 
-  printf("Addition, serial.\n");
-  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+    ADDTIME_COR(pDivArray, ptdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+    ADDTIME_COR(sDivArray, stdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
+  }
 
-  printf("Substraction, parallel.\n");
-  GETTIME(pSubArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Substraction, serial.\n");
-  GETTIME(sSubArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Multiplication, parallel.\n");
-  GETTIME(pAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Multiplication, serial.\n");
-  GETTIME(sAddArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Division, parallel.\n");
-  GETTIME(pDivArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
-
-  printf("Division, serial.\n");
-  GETTIME(sDivArray, timer, array1, array2, out_array, ARRAY_SIZE, ARRAY_SIZE);
-  printf("Time: %f\n\n", timer);
+  printf("Calculations done.\np - parallel, s - serial\nTime for:\n\tRandom arr1: %f\t\tRandom arr2: %f\n\
+\n\tpAdd: %f\t\tsAdd: %f\n\tpSub: %f\t\tsSub: %f\n\tpMul: %f\t\tsMul: %f\n\tpDiv: %f\t\tsDiv: %f\n",
+         t_init_arr1, t_init_arr2, ptadd, stadd, ptsub, stsub, ptmul, stmul, ptdiv, stdiv);
 
   deinit(array1, ARRAY_SIZE);
   deinit(array2, ARRAY_SIZE);

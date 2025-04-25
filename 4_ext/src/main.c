@@ -13,9 +13,11 @@ int main() {
   void *array1,
        *array2,
        *out_array;
-  double timer;
+  double ptadd=0, ptsub=0, ptmul=0, ptdiv=0,
+         stadd=0, stsub=0, stmul=0, stdiv=0, timer;
 
-  printf("OMP Threads amount: %d\n\n", getThreadsNum());
+  printf("Settings:\n\tOMP Threads: %d\n\tArray sizes: %d\n\tDimensions: %d\n\tCycles: %d\n\n",
+         getThreadsNum(), ARRAY_SIZE, DIMENSIONS, CYCLES);
 
   printf("Initializing...\n");
  
@@ -41,55 +43,34 @@ int main() {
         printf("out done, time: %f\n", timer);
       }
     }
-  } 
-
-  printf("\nAddition, parallel.\n");
-  #pragma omp parallel
-  {
-    #pragma omp single 
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pAdd); }
   }
-  printf("Time: %f\n\n", timer); 
 
-  printf("Addition, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sAdd);
-  printf("Time: %f\n\n", timer);
-
-  printf("Substraction, parallel.\n");
-  #pragma omp parallel
-  {
+  printf("Starting calculations...\n");
+  for(uint32_t i=0; i<CYCLES; ++i) {
+    #pragma omp parallel
     #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pSub); }
-  }
-  printf("Time: %f\n\n", timer);
+    {ADDTIME_COR(pMultiDim, ptadd, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pAdd);}
+    ADDTIME_COR(sMultiDim, stadd, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sAdd);
 
-  printf("Substraction, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sSub);
-  printf("Time: %f\n\n", timer);
-
-  printf("Multiplication, parallel.\n");
-  #pragma omp parallel
-  {
+    #pragma omp parallel
     #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pMul); }
-  }
-  printf("Time: %f\n\n", timer);
+    {ADDTIME_COR(pMultiDim, ptsub, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pSub);}
+    ADDTIME_COR(sMultiDim, stsub, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sSub);
 
-  printf("Multiplication, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sMul);
-  printf("Time: %f\n\n", timer);
-
-  printf("Division, parallel.\n");
-  #pragma omp parallel
-  {
+    #pragma omp parallel
     #pragma omp single
-    { GETTIME(pMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pDiv); }
-  }
-  printf("Time: %f\n\n", timer);
+    {ADDTIME_COR(pMultiDim, ptmul, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pMul);}
+    ADDTIME_COR(sMultiDim, stmul, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sMul);
 
-  printf("Division, serial.\n");
-  GETTIME(sMultiDim, timer, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sDiv);
-  printf("Time: %f\n\n", timer);
+    #pragma omp parallel
+    #pragma omp single
+    {ADDTIME_COR(pMultiDim, ptdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, pDiv);}
+    ADDTIME_COR(sMultiDim, stdiv, CYCLES, array1, array2, out_array, ARRAY_SIZE, DIMENSIONS, sDiv);
+  }
+
+  printf("Calculations done.\np - parallel, s - serial\nTime for:\
+\n\tpAdd: %f\t\tsAdd: %f\n\tpSub: %f\t\tsSub: %f\n\tpMul: %f\t\tsMul: %f\n\tpDiv: %f\t\tsDiv: %f\n",
+         ptadd, stadd, ptsub, stsub, ptmul, stmul, ptdiv, stdiv);
 
   printf("Deleting arrays...\n");
   // wont parallize bc same reasons as init

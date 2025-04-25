@@ -5,6 +5,8 @@
 #define ARRAY_SIZE 2500000
 #define arr_t uint8_t
 
+#define CYCLES 1
+
 #include <stdint.h>
 
 void pAddArray(const arr_t inp_array1[], const arr_t inp_array2[], arr_t out_array[], const uint32_t size);

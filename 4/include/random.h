@@ -9,5 +9,6 @@
 #include <stdint.h>
 
 void randomFill(arr_t array[], const uint32_t size);
+void randomizeMat(arr_t* array[], const uint32_t sizeX, const uint32_t sizeY);
 
 #endif

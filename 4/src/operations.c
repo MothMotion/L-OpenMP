@@ -62,21 +62,15 @@ void sDivArray(arr_t* arr1[], arr_t* arr2[], arr_t* out[], const uint32_t sizeX,
         out[i][j] = arr1[i][j] / arr2[i][j];
       else out[i][j] = arr1[i][j]; // i STILL dont give a f
 }
-#include <stdio.h>
+
 void init(arr_t* arr[], const uint32_t sizeX, const uint32_t sizeY) {
-  #pragma omp parallel for
-  for(uint32_t i=0; i<sizeX; ++i) {
+  #pragma omp parallel for shared(arr)
+  for(uint32_t i=0; i<sizeX; ++i)
     arr[i] = malloc(sizeY * sizeof(arr_t));
-    if(arr[i] == NULL)
-      printf("hi:3 ");
-    for(uint32_t j=0; j < sizeY; ++j)
-      arr[i][j] = 5;
-    //randomFill(arr[i], sizeY);
-  }
 }
 
 void deinit(arr_t* arr[], const uint32_t size) {
-  //#pragma omp parallel for
+  #pragma omp parallel for
   for(uint32_t i=0; i<size; ++i)
     free(arr[i]);
 }

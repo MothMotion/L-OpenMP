@@ -3,9 +3,12 @@ CCFLAGS = -Wall -Wextra -Iinclude -fopenmp
 
 SRC_DIR = src
 OBJ_DIR = obj
+LSF_DIR = lsf
 
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
+
+LSF = $(wildcard $(LSF_DIR)/*.lsf)
 
 TARGET = program
 
@@ -20,3 +23,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 clean:
 	rm -f $(OBJ)
+
+bsubload: $(TARGET)
+	for lsf_script in $(LSF) ; do \
+		bsub < $$lsf_script ; \
+	done

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+mkdir -p logs err
+
+#BSUB -J zl2_task1
+#BSUB -P zbin_lab2
+#BSUB -W 00:20
+#BSUB -n 1
+#BSUB -oo logs/pr4.log
+#BSUB -eo err/pr4.err
+
+export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=4
+./program
