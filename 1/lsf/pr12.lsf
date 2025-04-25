@@ -6,9 +6,9 @@ mkdir -p logs err
 #BSUB -P mothm_lab2_t1
 #BSUB -W 08:00
 #BSUB -n 1
-#BSUB -oo logs/pr16.log
-#BSUB -eo err/pr16.err
+#BSUB -oo logs/pr12.log
+#BSUB -eo err/pr12.err
 
-export OMP_NUM_THREADS=24
-#export OMP_NUM_THREADS=24
+export OMP_NUM_THREADS=12
+#export OMP_NUM_THREADS=12
 ./program

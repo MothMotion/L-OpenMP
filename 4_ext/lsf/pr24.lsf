@@ -2,8 +2,8 @@
 
 mkdir -p logs err
 
-#BSUB -J lab2_t1
-#BSUB -P mothm_lab2_t1
+#BSUB -J lab2_t4_e
+#BSUB -P mothm_lab2_t4_e
 #BSUB -W 08:00
 #BSUB -n 1
 #BSUB -oo logs/pr16.log
