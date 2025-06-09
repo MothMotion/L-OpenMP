@@ -3,7 +3,7 @@
 #include <time.h>
 #include <omp.h>
 
-#define ARRAY_SIZE 1000000 
+#define ARRAY_SIZE 2000000 
 #define NUM_THREADS 4
 
 void fill_array_random(int *arr) {
