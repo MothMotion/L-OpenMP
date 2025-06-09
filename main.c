@@ -1,69 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <omp.h>
+#include <time.h>
 
-#define ARRAY_SIZE 2000000 
-#define NUM_THREADS 4
+#define ARRAY_SIZE 2000000
+#define NUM_RUNS 1000
 
-void fill_array_random(int *arr) {
-    srand(time(NULL));
-    for (int i = 0; i < ARRAY_SIZE; ++i) {
-        arr[i] = rand() % 100; // Заполняем случайными числами от 0 до 99
+// Функция для заполнения массива случайными числами
+void fill_array(double *array, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        array[i] = (double)rand() / RAND_MAX;
     }
 }
 
-// Последовательный вариант
-long long sequential_sum(int *arr) {
-    long long sum = 0;
-    for (int i = 0; i < ARRAY_SIZE; ++i) {
-        sum += arr[i];
+// Последовательное вычисление суммы
+double sequential_sum(const double *array) {
+    double sum = 0.0;
+    for (size_t i = 0; i < ARRAY_SIZE; i++) {
+        sum += array[i];
     }
     return sum;
 }
 
-// Параллельный вариант
-long long parallel_sum(int *arr) {
-    long long sum = 0;
+// Параллельное вычисление суммы с OpenMP
+double parallel_sum(const double *array, int num_threads) {
+    double sum = 0.0;
     int i;
-    #pragma omp parallel num_threads(NUM_THREADS) reduction(+:sum)
-    {
-        #pragma omp for
-        for (i = 0; i < ARRAY_SIZE; ++i) {
-            sum += arr[i];
-        }
+    #pragma omp parallel for reduction(+:sum) num_threads(num_threads)
+    for (i = 0; i < ARRAY_SIZE; i++) {
+        sum += array[i];
     }
     return sum;
 }
 
 int main() {
-    int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));
+    double *array = (double *)malloc(ARRAY_SIZE * sizeof(double));
     if (array == NULL) {
         fprintf(stderr, "Ошибка выделения памяти\n");
         return 1;
     }
 
-    fill_array_random(array);
+    fill_array(array, ARRAY_SIZE);
 
-    // Последовательный вариант
-    clock_t start_time = clock();
-    long long sequential_result = sequential_sum(array);
-    clock_t end_time = clock();
-    double sequential_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    // Тестирование последовательной версии
+    double start_time, end_time, total_time = 0.0;
+    double seq_sum = 0.0;
 
-    printf("Последовательная сумма: %lld\n", sequential_result);
-    printf("Время последовательного выполнения: %f секунд\n", sequential_time);
+    for (int run = 0; run < NUM_RUNS; run++) {
+        start_time = omp_get_wtime();
+        seq_sum = sequential_sum(array, ARRAY_SIZE);
+        end_time = omp_get_wtime();
+        total_time += (end_time - start_time);
+    }
+    printf("Последовательная сумма: %f\n", seq_sum);
+    printf("Среднее время (последовательная версия): %f мс\n", (total_time / NUM_RUNS) * 1000);
 
-    // Параллельный вариант
-    start_time = clock();
-    long long parallel_result = parallel_sum(array, ARRAY_SIZE);
-    end_time = clock();
-    double parallel_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    // Тестирование параллельной версии с разным количеством потоков
+    int threads_list[] = {2, 4, 8, 16};
+    int num_threads_options = sizeof(threads_list) / sizeof(threads_list[0]);
 
-    printf("Параллельная сумма: %lld\n", parallel_result);
-    printf("Время параллельного выполнения: %f секунд\n", parallel_time);
+    for (int i = 0; i < num_threads_options; i++) {
+        int num_threads = threads_list[i];
+        total_time = 0.0;
+        double par_sum = 0.0;
+
+        for (int run = 0; run < NUM_RUNS; run++) {
+            start_time = omp_get_wtime();
+            par_sum = parallel_sum(array, ARRAY_SIZE, num_threads);
+            end_time = omp_get_wtime();
+            total_time += (end_time - start_time);
+        }
+
+        printf("Параллельная сумма (%d потоков): %f\n", num_threads, par_sum);
+        printf("Среднее время (%d потоков): %f мс\n", num_threads, (total_time / NUM_RUNS) * 1000);
+    }
 
     free(array);
-
     return 0;
 }
