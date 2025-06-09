@@ -25,10 +25,11 @@ long long sequential_sum(int *arr) {
 // Параллельный вариант
 long long parallel_sum(int *arr) {
     long long sum = 0;
+    int i;
     #pragma omp parallel num_threads(NUM_THREADS) reduction(+:sum)
     {
         #pragma omp for
-        for (int i = 0; i < ARRAY_SIZE; ++i) {
+        for (i = 0; i < ARRAY_SIZE; ++i) {
             sum += arr[i];
         }
     }
