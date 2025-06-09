@@ -56,7 +56,7 @@ int main() {
     printf("Среднее время (последовательная версия): %f мс\n", (total_time / NUM_RUNS) * 1000);
 
     // Тестирование параллельной версии с разным количеством потоков
-    int threads_list[] = {2, 4, 8, 16};
+    int threads_list[] = {4, 8, 12};
     int num_threads_options = sizeof(threads_list) / sizeof(threads_list[0]);
 
     for (int i = 0; i < num_threads_options; i++) {
